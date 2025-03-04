@@ -1,0 +1,1 @@
+scons target=template_release lto=full optimize=size arch=x86_64
