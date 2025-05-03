@@ -1,7 +1,6 @@
 #ifndef VOXEL_RENDER_DETAIL_TEXTURE_GPU_TASK_H
 #define VOXEL_RENDER_DETAIL_TEXTURE_GPU_TASK_H
 
-#include "../../modifiers/voxel_modifier.h"
 #include "../../util/containers/std_vector.h"
 #include "../../util/math/vector3f.h"
 #include "../../util/math/vector4f.h"
@@ -9,6 +8,10 @@
 #include "../gpu/gpu_task_runner.h"
 #include "../ids.h"
 #include "detail_rendering.h"
+
+#ifdef VOXEL_ENABLE_MODIFIERS
+#include "../../modifiers/voxel_modifier.h"
+#endif
 
 namespace zylann::voxel {
 
@@ -57,7 +60,9 @@ public:
 	std::shared_ptr<ComputeShader> shader;
 	std::shared_ptr<ComputeShaderParameters> shader_params;
 
+#ifdef VOXEL_ENABLE_MODIFIERS
 	StdVector<VoxelModifier::ShaderData> modifiers;
+#endif
 
 	// Stuff to carry over for the second CPU pass
 	std::shared_ptr<DetailTextureOutput> output;
@@ -66,7 +71,7 @@ public:
 	Vector3i block_size;
 	VolumeID volume_id;
 	uint8_t lod_index;
-#if DEBUG_ENABLED
+#ifdef VOXEL_TESTS
 	PackedByteArray *testing_output = nullptr;
 #endif
 
@@ -85,6 +90,7 @@ private:
 	RID _detail_normalmap_pipeline_rid;
 	RID _normalmap_dilation_pipeline_rid;
 	StdVector<RID> _detail_modifier_pipelines;
+	StdVector<RID> _uniform_sets_to_free;
 
 	GPUStorageBuffer _mesh_vertices_sb;
 	GPUStorageBuffer _mesh_indices_sb;

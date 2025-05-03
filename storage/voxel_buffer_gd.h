@@ -159,6 +159,9 @@ public:
 
 	void downscale_to(Ref<VoxelBuffer> dst, Vector3i src_min, Vector3i src_max, Vector3i dst_min) const;
 
+	void rotate_90(Vector3i::Axis axis, int turns);
+	void mirror(Vector3i::Axis axis);
+
 	Ref<VoxelBuffer> duplicate(bool include_metadata) const;
 
 	Ref<VoxelTool> get_voxel_tool();
@@ -240,6 +243,9 @@ private:
 
 	std::shared_ptr<zylann::voxel::VoxelBuffer> _buffer;
 };
+
+Variant get_voxel_metadata(zylann::voxel::VoxelBuffer &vb, const Vector3i pos);
+void set_voxel_metadata(zylann::voxel::VoxelBuffer &vb, const Vector3i pos, const Variant meta);
 
 } // namespace godot
 } // namespace zylann::voxel

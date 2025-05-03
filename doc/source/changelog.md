@@ -5,12 +5,66 @@ This is a high-level list of features, changes and fixes that have been made ove
 
 At the moment, this module doesn't have a distinct release schedule, so this changelog follows Godot's version numbers and binary releases. Almost each version mentionned here should have an associated Git branch (for THIS repo, not Godot's) containing features at the time of the version. Backports aren't done so far.
 
-Semver is not yet in place, so each version can have breaking changes, although it shouldn't happen often across minor versions.
+I try to minimize breaking changes, but there are usually a few in each release which I list in detail, so watch out for that section.
 
-1.4 - ongoing development - `master`
+
+Dev 1.4.2
+-------------
+
+Primarily developped with Godot 4.4.1+
+
+- `VoxelBuffer`: added functions to rotate/mirror contents
+- `VoxelInstanceLibraryItem`: Exposed `floating_sdf_*` parameters to tune how floating instances are detected after digging ground around them.
+- `VoxelInstanceLibraryMultiMeshItem`: added `removal_behavior` property to trigger something when instances get removed
+- `VoxelGeneratorGraph`: implemented constant reduction, which slightly optimizes graphs running on CPU if they contain constant branches
+- `VoxelMesherBlocky`: added tint mode to modulate voxel colors using the `COLOR` channel.
+- `VoxelMesherTransvoxel`: added `Single` texturing mode, which uses only one byte per voxel to store a texture index. `VoxelGeneratorGraph` was also updated to include this mode.
+- `VoxelTool`: added `do_mesh` to replace `stamp_sdf`. Supported on terrains only.
+- Build system: added options to turn off features when doing custom builds
+- Introduced `VoxelFormat` to allow overriding default channel depths (was required to use the new `Single` voxel textures mode)
+
+- Fixes
+    - `VoxelBlockyTypeLibrary`: fixed crash when setting `types` to empty array
+    - `VoxelInstancer`: 
+        - Fixed instance removal failing randomly after at least one chunk gets unloaded
+        - Fixed instances getting generated when digging down or building up in *already meshed* chunks that had no geometry before, when using `VoxelLodTerrain`
+        - Fixed transition meshes should not be used as spawning surfaces, they caused density bias and position bias at chunk borders
+    - `VoxelGeneratorGraph`: 
+        - Editor: fixed error sometimes printing after closing the graph editor
+        - Editor: fixed error spam `Invalid param name` after editing a graph (in some yet unknown situations)
+    - `VoxelMesherBlocky`: Fixed crash when invalid model IDs are present at chunk borders with `VoxelLodTerrain`
+    - `VoxelMesherTransvoxel`: Fixed some incorrect geometry changes near positive LOD borders, notably when voxel textures are used. Edge cases remain but can be fixed with a shader hack for now.
+    - `VoxelStreamRegionFiles`: GDExtension: fixed error creating directories
+    - `VoxelStreamSQLite`: `preferred_coordinate_format` was incorrectly exposed (fixed thanks to @beicause)
+    - `VoxelTool`:
+        - `is_area_editable` was off by one in size, and was always returning `true` if the size of the AABB had any component smaller than 1
+        - `paste_masked` didn't check the right coordinates to clear metadata in destinations containing at least one. It also caused a spam of `get_voxel` being at invalid position
+    - `VoxelViewer`: reparenting (`remove_child` followed by `add_child`) should no longer reload terrain around the viewer
+    - `VoxelAStarGrid3D`: fixed crash if `find_path` is called without setting a terrain first
+
+- Breaking changes
+    - `VoxelGeneratorGraph`: `SdfSphere` node: `radius` is now an input instead of a parameter (compat breakage only occurs if you used a script to set it: replace `set_node_param(id, 0, radius)` with `set_node_default_input(id, 3, radius)`)
+
+
+1.4.1 - 29/03/2025 - tag `v1.4.1`
 --------------------------------------
 
-Primarily developped with Godot 4.3.
+- `VoxelToolMultipassGenerator`: implemented `get/set_voxel_metadata`
+
+- Fixes
+    - Fixed leak when GPU is enabled for voxel generation or detail normalmap rendering, which could lead to a crash after a while
+    - Terrains no longer interpolate unnecessarily when physics interpolation is enabled (terrain is static so it is not supported for now).
+    - `VoxelGeneratorGraph`: 
+        - Fixed `Curve` node was incorrect when used on the GPU.
+        - Fixed single-voxel queries not working with blocky voxels (notably fixes raycast in VoxelLodTerrain)
+        - Editor: auto-connects stopped working when copying a node having some (like noise; workaround was to reload the graph)
+    - `VoxelGeneratorMultipassCB`: Fixed voxel metadata wasn't preserved when outputting final blocks
+
+
+1.4 - 03/03/2025 - tag `v1.4`
+------------------------------
+
+Primarily developped with Godot 4.4.
 
 - `VoxelBlockyModel`: Added option to turn off "LOD skirts" when used with `VoxelLodTerrain`, which may be useful with transparent models
 - `VoxelBlockyModelCube`: Added support for mesh rotation like `VoxelBlockyMesh` (prior to that, rotation buttons in the editor only swapped tiles around)

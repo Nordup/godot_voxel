@@ -104,7 +104,9 @@ VoxelGraphEditor::VoxelGraphEditor() {
 			menu_button->set_switch_on_hover(true);
 
 			PopupMenu *popup_menu = menu_button->get_popup();
+#ifdef VOXEL_ENABLE_GPU
 			popup_menu->add_item(ZN_TTR("Generate Shader"), MENU_GENERATE_SHADER);
+#endif
 
 			popup_menu->connect("id_pressed", callable_mp(this, &Self::_on_menu_id_pressed));
 
@@ -349,7 +351,9 @@ void VoxelGraphEditor::process(float delta) {
 	if (_time_before_preview_update > 0.f) {
 		_time_before_preview_update -= delta;
 		if (_time_before_preview_update < 0.f) {
-			update_previews(true);
+			if (_graph.is_valid()) {
+				update_previews(true);
+			}
 		}
 	}
 
@@ -779,6 +783,7 @@ void VoxelGraphEditor::_on_menu_id_pressed(int id) {
 			menu->set_item_checked(idx, _live_update_enabled);
 		} break;
 
+#ifdef VOXEL_ENABLE_GPU
 		case MENU_GENERATE_SHADER: {
 			ERR_FAIL_COND(_generator.is_null());
 			VoxelGenerator::ShaderSourceData sd;
@@ -789,6 +794,7 @@ void VoxelGraphEditor::_on_menu_id_pressed(int id) {
 			_shader_dialog->set_shader_code(sd.glsl);
 			_shader_dialog->popup_centered();
 		} break;
+#endif
 
 		default:
 			ERR_PRINT("Unknown menu item");
